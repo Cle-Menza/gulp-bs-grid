@@ -1,0 +1,43 @@
+# ignore node dependency directories (used by grunt)
+node_modules/
+
+# ignore OS generated files
+ehthumbs.db
+Thumbs.db
+**/.DS_Store
+._.DS_Store
+
+# ignore Editor files
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+.idea/
+.vscode/
+
+# ignore log files and databases
+*.log
+*.sql
+*.sqlite
+*.env
+
+# SASS #
+##########
+**/.sass-cache
+**/.sass-cache/*
+**/.map
+
+# Vim generated files #
+######################
+*.un~
+
+# Bower #
+##########
+/bower_components/*
+
+# track these files, if they exist
+!.gitignore
+!.editorconfig
+!.phpcs.xml.dist
+!README.md
+!CHANGELOG.md
+!composer.json
