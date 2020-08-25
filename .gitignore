@@ -2,7 +2,7 @@
 node_modules/
 
 # distribution
-./dist/
+dist/**/*
 
 # ignore OS generated files
 ehthumbs.db
