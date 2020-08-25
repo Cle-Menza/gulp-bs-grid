@@ -15,7 +15,7 @@ const del           = require('del')
 
 gulp.task('browser-sync', () => {
   browserSync.init({
-    server: { baseDir: 'app/' },
+    server: { baseDir: 'dist/' },
     notify: false,
     open: false
     // online: false, // Work Offline Without Internet Connection
@@ -27,17 +27,17 @@ gulp.task('scripts', () => {
   return gulp
     .src([
       // 'node_modules/jquery/dist/jquery.min.js',
-      'app/js/main.js',
+      './src/js/main.js',
       ])
     .pipe(concat('main.min.js'))
     .pipe(uglify())
-    .pipe(gulp.dest('app/js/'))
+    .pipe(gulp.dest('./dist/js/'))
     .pipe(browserSync.stream())
 })
 
 gulp.task('styles', () => {
   return gulp
-    .src('app/' + preprocessor + '/main.' + preprocessor + '')
+    .src('./src/' + preprocessor + '/main.' + preprocessor + '')
     .pipe(sass())
     .on('error', sass.logError)
     .pipe(concat('main.min.css'))
@@ -48,30 +48,22 @@ gulp.task('styles', () => {
       level: { 1: { specialComments: 0 } }, 
       format: 'keep-breaks'
     } ))
-    .pipe(gulp.dest('app/css/'))
+    .pipe(gulp.dest('./dist/css/'))
     .pipe(browserSync.stream())
-})
-
-gulp.task('clean-img', () => {
-  return del(['app/img/*.png', 'app/img/*.jpg', 'app/img/*.svg', 'app/img/*.jpeg', '!app/img/src/', '!app/img/favicon/'])
 })
 
 gulp.task('images', () => {
   return gulp
-    .src('app/img/src/**/*')
-    .pipe(newer('app/img/'))
+    .src('./src/img/**/*')
+    // .pipe(newer('./src/img/'))
     .pipe(imagemin())
-    .pipe(gulp.dest('app/img/'))
+    .pipe(gulp.dest('./dist/img/'))
     .pipe(browserSync.reload({ stream: true }))
-})
-
-gulp.task('clean-svg', () => {
-  return del(['app/icons/**'])
 })
 
 gulp.task('svg', () => {
   return gulp
-  .src('app/svg/**/*.svg')
+  .src('./src/svg/**/*.svg')
   .pipe(svgmin({
       plugins: [{
         removeViewBox: false
@@ -106,19 +98,50 @@ gulp.task('svg', () => {
   }
   })
 	)
-  .pipe(gulp.dest('app/icons/'))
+  .pipe(gulp.dest('./dist/icons/'))
   .pipe(browserSync.reload({ stream: true }))
 })
 
+gulp.task('html', () => {
+  return gulp
+    .src('./src/*.html')
+    .pipe(gulp.dest('./dist/'))
+    .pipe(browserSync.reload({ stream: true }))
+})
+
+gulp.task('fonts', () => {
+  return gulp
+    .src('./src/fonts/**/*')
+    .pipe(gulp.dest('./dist/fonts/'))
+});
+
+gulp.task('clean', () => {
+  return del('./dist/')
+})
+
+gulp.task('build',
+  gulp.series('clean',
+    gulp.parallel(
+      'html',
+      'styles',
+      'scripts',
+      'images',
+      'svg',
+      'fonts',
+    )
+  )
+)
+
 gulp.task('watch', () => {
-  gulp.watch('app/' + preprocessor + '/**/*', gulp.parallel('styles'))
-  gulp.watch('app/**/*.html').on('change', browserSync.reload)
-  // gulp.watch('app/**/*.html', browserSync.reload)
-  gulp.watch(['app/**/*.js', '!app/**/*.min.js'], gulp.parallel('scripts'))
-  gulp.watch('app/img/src/**/*', gulp.series('clean-img', 'images'))
-  gulp.watch('app/svg/**/*.svg', gulp.series('clean-svg', 'svg'))
+  gulp.watch('./src/' + preprocessor + '/**/*', gulp.parallel('styles'))
+  gulp.watch('./src/*.html', gulp.parallel('html'))
+  gulp.watch(['./src/**/*.js', '!app/**/*.min.js'], gulp.parallel('scripts'))
+  gulp.watch('./src/img/**/*', gulp.parallel('images'))
+  gulp.watch('./src/svg/**/*.svg', gulp.parallel('svg'))
+  gulp.watch('./src/fonts/**/*', gulp.parallel('fonts'))
 })
 
 gulp.task('default', gulp.series(
-  gulp.parallel('browser-sync', 'watch')
+  'build',
+  gulp.parallel('browser-sync', 'watch')      
 ))
