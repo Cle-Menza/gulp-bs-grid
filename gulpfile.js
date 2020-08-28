@@ -63,43 +63,43 @@ gulp.task('images', () => {
 
 gulp.task('svg', () => {
   return gulp
-  .src('./src/svg/**/*.svg')
-  .pipe(svgmin({
+    .src('./src/svg/**/*.svg')
+    .pipe(svgmin({
       plugins: [{
         removeViewBox: false
       }]
-  }))
-  .pipe(svgSprite({
-  shape: {
-    dimension: { // Set maximum dimensions
-    maxWidth: 512, // Max. shape width
-    maxHeight: 512, // Max. shape height
-    precision: 2, // Floating point precision
-    attributes: false, // Width and height attributes on embedded shapes
-    },
-    spacing: { // Add padding
-    padding: 0
-    },
-    dest: 'svg' // Keep the intermediate files
-  },
-  svg: { // General options for created SVG files
-    xmlDeclaration: true, // Add XML declaration to SVG sprite
-    doctypeDeclaration: true, // Add DOCTYPE declaration to SVG sprite
-    namespaceIDs: true, // Add namespace token to all IDs in SVG shapes
-    namespaceIDPrefix: '', // Add a prefix to the automatically generated namespaceIDs
-    namespaceClassnames: true, // Add namespace token to all CSS class names in SVG shapes
-    dimensionAttributes: true, // Width and height attributes on the sprite
-  },
-  mode: {
-    symbol: {
-      inline: true,
-    }, // Activate the «symbol» mode
-    stack: true // Create a «stack» sprite
-  }
-  })
-	)
-  .pipe(gulp.dest('./dist/icons/'))
-  .pipe(browserSync.reload({ stream: true }))
+    }))
+    .pipe(svgSprite({
+      shape: {
+        dimension: { // Set maximum dimensions
+        maxWidth: 512, // Max. shape width
+        maxHeight: 512, // Max. shape height
+        precision: 2, // Floating point precision
+        attributes: false, // Width and height attributes on embedded shapes
+        },
+        spacing: { // Add padding
+        padding: 0
+        },
+        dest: 'svg' // Keep the intermediate files
+      },
+      svg: { // General options for created SVG files
+        xmlDeclaration: true, // Add XML declaration to SVG sprite
+        doctypeDeclaration: true, // Add DOCTYPE declaration to SVG sprite
+        namespaceIDs: true, // Add namespace token to all IDs in SVG shapes
+        namespaceIDPrefix: '', // Add a prefix to the automatically generated namespaceIDs
+        namespaceClassnames: true, // Add namespace token to all CSS class names in SVG shapes
+        dimensionAttributes: true, // Width and height attributes on the sprite
+      },
+      mode: {
+        symbol: {
+          inline: true,
+        }, // Activate the «symbol» mode
+        stack: true // Create a «stack» sprite
+      }
+    })
+    )
+    .pipe(gulp.dest('./dist/icons/'))
+    .pipe(browserSync.reload({ stream: true }))
 })
 
 gulp.task('html', () => {
@@ -135,7 +135,7 @@ gulp.task('build',
 gulp.task('watch', () => {
   gulp.watch('./src/' + preprocessor + '/**/*', gulp.parallel('styles'))
   gulp.watch('./src/*.html', gulp.parallel('html'))
-  gulp.watch(['./src/**/*.js', '!app/**/*.min.js'], gulp.parallel('scripts'))
+  gulp.watch('./src/**/*.js', gulp.parallel('scripts'))
   gulp.watch('./src/img/**/*', gulp.parallel('images'))
   gulp.watch('./src/svg/**/*.svg', gulp.parallel('svg'))
   gulp.watch('./src/fonts/**/*', gulp.parallel('fonts'))
