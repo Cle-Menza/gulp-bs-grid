@@ -1,4 +1,4 @@
-@mixin min($screen)
+@mixin max($screen)
   $value: map-get($grid-breakpoints, $screen)
-  @media (min-width: $value)
+  @media (max-width: $value)
     @content
