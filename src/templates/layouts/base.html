@@ -1,0 +1,31 @@
+<head>
+	<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="icon" href="./assets/img/favicon/favicon.ico" sizes="16x16" type="image/x-icon">
+  <link rel="apple-touch-icon-precomposed" href="./assets/img/favicon/apple-icon-180-180.png" sizes="180x180">
+
+  <title>{{ title }}</title>
+
+	<link rel="stylesheet" href="./assets/css/styles.min.css">
+</head>
+
+<body>
+
+  <div id="site-content">
+    {% include "partials/header.html" %}
+
+    <main id="main">
+      {% block content %}
+      {% endblock %}
+    </main>
+
+    {% include "partials/footer.html" %}
+  </div>
+
+  <script src="./assets/js/scripts.min.js"></script>
+
+  {% include "sprite/symbol.svg" %}
+
+</body>
+</html>

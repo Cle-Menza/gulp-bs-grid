@@ -1,0 +1,22 @@
+$sm: 576px;
+$md: 768px;
+$lg: 990px;
+$xl: 1279px;
+$grid-gutter-width: 30px;
+$grid-breakpoints: (xs: 0, sm: 576px, md: 768px, lg: 990px, xl: 1279px);
+
+$system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !default;
+
+$base-font-family: $system-font !default;
+$base-font-size: 16px !default;
+$base-line-height: 1.5 !default;
+$base-font-color: #252525 !default;
+$base-font-weight: 400 !default;
+$base-background-color: #fff !default;
+
+$base-heading-font-family: $system-font !default;
+$base-heading-font-size: 12px !default; // h6 font size
+$base-heading-font-size-step: 4 !default;
+$base-heading-line-height: 1.25 !default;
+$base-heading-font-color: #232425 !default;
+$base-heading-font-weight: 600 !default;

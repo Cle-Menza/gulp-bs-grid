@@ -1,0 +1,14 @@
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: $base-heading-font-family;
+  font-weight: $base-heading-font-weight;
+  color: $base-heading-font-color;
+}
+
+@for $i from 1 through 6 {
+  h#{$i},
+  .h#{$i} {
+    font-size: $base-heading-font-size + $base-heading-font-size-step * (6 - $i);
+  }
+}
+

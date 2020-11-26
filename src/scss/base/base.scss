@@ -1,0 +1,27 @@
+@import '../vars';
+@import 'code';
+@import 'core';
+@import 'forms';
+@import 'heading';
+@import 'tables';
+@import 'typography';
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+}
+
+p {
+  margin: 0 0 1em 0;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: inline-flex;
+  vertical-align: -0.125em;
+}

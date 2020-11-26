@@ -1,9 +1,11 @@
-let preprocessor = 'sass'
+'use strict'
+
 const gulp = require('gulp')
 const browserSync = require('browser-sync').create()
 const concat = require('gulp-concat')
 const uglify = require('gulp-uglify-es').default
 const babel = require('gulp-babel')
+const include = require('gulp-include')
 const sass = require('gulp-sass')
 const autoprefixer = require('gulp-autoprefixer')
 const mmq = require('gulp-merge-media-queries')
@@ -13,11 +15,18 @@ const newer = require('gulp-newer')
 const svgSprite = require('gulp-svg-sprite')
 const svgmin = require('gulp-svgmin')
 const del = require('del')
-const include = require('gulp-include')
+const nunjucksRender = require('gulp-nunjucks-render')
+const data = require('gulp-data')
+const fs = require('fs')
+const removeHtmlComments = require('gulp-remove-html-comments')
+const beautify = require('gulp-beautify')
+const rename = require('gulp-rename')
+
+sass.compiler = require('node-sass')
 
 gulp.task('browser-sync', () => {
   browserSync.init({
-    server: {baseDir: './dist/'},
+    server: { baseDir: './dist/' },
     notify: false,
     open: false
     // online: false, // Work Offline Without Internet Connection
@@ -29,130 +38,159 @@ gulp.task('scripts', () => {
   return gulp
     .src([
       // 'node_modules/jquery/dist/jquery.min.js',
-      './src/js/scripts.js',
+      './src/js/**/*.js'
     ])
     .pipe(
       babel({
         presets: ['@babel/env']
+        // ignore: ['./node_modules/@glidejs/glide/dist/glide.min.js']
       })
     )
+    .pipe(include())
+    .pipe(rename({ dirname: '' }))
+    .pipe(gulp.dest('./dist/assets/js/'))
     .pipe(concat('scripts.min.js'))
     .pipe(uglify())
-    .pipe(gulp.dest('./dist/js/'))
+    .pipe(gulp.dest('./dist/assets/js/'))
+    .pipe(browserSync.stream())
+})
+
+gulp.task('main-style', () => {
+  return gulp
+    .src('./src/scss/main.scss')
+    .pipe(sass())
+    .on('error', sass.logError)
+    .pipe(concat('styles.min.css'))
+    .pipe(
+      autoprefixer({ overrideBrowserslist: ['last 3 versions'], grid: true })
+    )
+    .pipe(mmq())
+    .pipe(
+      cleancss({
+        compatibility: 'ie11',
+        level: 2
+      })
+    )
+    .pipe(gulp.dest('./dist/assets/css/'))
     .pipe(browserSync.stream())
 })
 
 gulp.task('styles', () => {
   return gulp
-    .src('./src/' + preprocessor + '/main.' + preprocessor + '')
+    .src(['./src/scss/**/*.{scss,css}', '!./src/scss/main.scss'])
     .pipe(sass())
     .on('error', sass.logError)
-    .pipe(concat('main.min.css'))
-    .pipe(autoprefixer({overrideBrowserslist: ['last 10 versions'], grid: true}))
-    .pipe(mmq())
-    .pipe(cleancss({
-      compatibility: 'ie9',
-      level: {1: {specialComments: 0}},
-      format: 'keep-breaks'
-    }))
-    .pipe(gulp.dest('./dist/css/'))
+    .pipe(
+      autoprefixer({ overrideBrowserslist: ['last 3 versions'], grid: true })
+    )
+    .pipe(rename({ dirname: '' }))
+    .pipe(gulp.dest('./dist/assets/css/'))
     .pipe(browserSync.stream())
 })
 
 gulp.task('images', () => {
   return gulp
     .src('./src/img/**/*')
-    // .pipe(newer('./src/img/'))
+    .pipe(newer('./dist/assets/img/'))
     .pipe(imagemin())
-    .pipe(gulp.dest('./dist/img/'))
-    .pipe(browserSync.reload({stream: true}))
+    .pipe(gulp.dest('./dist/assets/img/'))
+    .pipe(browserSync.reload({ stream: true }))
 })
 
 gulp.task('svg', () => {
   return gulp
     .src('./src/svg/**/*.svg')
-    .pipe(svgmin({
-      plugins: [{
-        removeViewBox: false
-      }]
-    }))
-    .pipe(svgSprite({
-      shape: {
-        dimension: { // Set maximum dimensions
-          maxWidth: 512, // Max. shape width
-          maxHeight: 512, // Max. shape height
-          precision: 2, // Floating point precision
-          attributes: false, // Width and height attributes on embedded shapes
-        },
-        spacing: { // Add padding
-          padding: 0
-        },
-        dest: 'svg' // Keep the intermediate files
-      },
-      svg: { // General options for created SVG files
-        xmlDeclaration: true, // Add XML declaration to SVG sprite
-        doctypeDeclaration: true, // Add DOCTYPE declaration to SVG sprite
-        namespaceIDs: true, // Add namespace token to all IDs in SVG shapes
-        namespaceIDPrefix: '', // Add a prefix to the automatically generated namespaceIDs
-        namespaceClassnames: true, // Add namespace token to all CSS class names in SVG shapes
-        dimensionAttributes: true, // Width and height attributes on the sprite
-      },
-      mode: {
-        symbol: {
-          inline: true,
-          sprite: 'symbol.svg',
-          dest: '.'
-        }, // Activate the «symbol» mode
-        // stack: false // Create a «stack» sprite
-      }
-    })
+    .pipe(
+      svgmin({
+        plugins: [
+          {
+            removeViewBox: false
+          }
+        ]
+      })
     )
-    .pipe(gulp.dest('./dist/icons/'))
-    .pipe(browserSync.reload({stream: true}))
+    .pipe(gulp.dest('./dist/assets/icons/'))
+    .pipe(
+      svgSprite({
+        svg: {
+          rootAttributes: {
+            id: 'symbol.svg',
+            'aria-hidden': 'true'
+          }
+        },
+        mode: {
+          symbol: {
+            inline: true,
+            sprite: 'symbol.svg',
+            dest: '.'
+          }
+        }
+      })
+    )
+    .pipe(gulp.dest('./src/templates/sprite/'))
+    .pipe(gulp.dest('./dist/assets/icons/'))
+    .pipe(browserSync.reload({ stream: true }))
 })
 
 gulp.task('html', () => {
-  return gulp
-    .src('./src/*.html')
-    .pipe(include())
-    .on('error', console.log)
-    .pipe(gulp.dest('./dist/'))
-    .pipe(browserSync.reload({stream: true}))
+  return (
+    gulp
+      .src('./src/pages/**/*.{html,njk}')
+      .pipe(
+        data(function () {
+          return JSON.parse(fs.readFileSync('./src/nunjucks-data.json'))
+        })
+      )
+      .pipe(
+        nunjucksRender({
+          path: ['./src/templates/']
+        })
+      )
+      // .on('error', console.log)
+      .pipe(removeHtmlComments())
+      .pipe(beautify.html({ indent_size: 2 }))
+      .pipe(gulp.dest('./dist'))
+      .pipe(browserSync.reload({ stream: true }))
+  )
 })
 
 gulp.task('fonts', () => {
   return gulp
-    .src('./src/fonts/**/*')
-    .pipe(gulp.dest('./dist/fonts/'))
-});
+    .src('./src/fonts/**/*.{woff,woff2,ttf,otf,eot,svg}')
+    .pipe(gulp.dest('./dist/assets/fonts/'))
+})
 
 gulp.task('clean', () => {
   return del('./dist/')
 })
 
-gulp.task('build',
-  gulp.series('clean',
-    gulp.parallel(
-      'html',
-      'styles',
-      'scripts',
-      'images',
-      'svg',
-      'fonts',
-    )
+gulp.task(
+  'build',
+  gulp.series(
+    'clean',
+    'svg',
+    'main-style',
+    'styles',
+    'scripts',
+    'images',
+    'fonts',
+    'html'
   )
 )
 
 gulp.task('watch', () => {
-  gulp.watch('./src/' + preprocessor + '/**/*', gulp.parallel('styles'))
-  gulp.watch('./src/**/*.html', gulp.parallel('html'))
+  gulp.watch('./src/scss/**/*', gulp.parallel('styles', 'main-style'))
+  gulp.watch(
+    ['./src/nunjucks-data.json', './src/**/*.{html,njk}'],
+    gulp.parallel('html')
+  )
   gulp.watch('./src/**/*.js', gulp.parallel('scripts'))
   gulp.watch('./src/img/**/*', gulp.parallel('images'))
   gulp.watch('./src/svg/**/*.svg', gulp.parallel('svg'))
   gulp.watch('./src/fonts/**/*', gulp.parallel('fonts'))
 })
 
-gulp.task('default', gulp.series(
-  'build',
-  gulp.parallel('browser-sync', 'watch')
-))
+gulp.task(
+  'default',
+  gulp.series('build', gulp.parallel('browser-sync', 'watch'))
+)
